@@ -18,6 +18,5 @@ def check_typos(request):
     raw = soup.find_all("a", class_="spell")
 
     # С помощью регулярных выражений сотавляем только запрос.
-    new_name = re.sub(u'[^А-Яа-я\s]*', u'', str(raw[0]))
-    print(new_name)
-print(check_typos("Fkbrcfylh Ytdcrbq"))
+    new_name = re.sub(u'[^А-Яа-я\s]*', u'', str(raw[0])).lstrip()
+    return(new_name.title())
