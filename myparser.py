@@ -17,6 +17,9 @@ def check_typos(request):
     soup = BeautifulSoup(page.text, "html.parser")
     raw = soup.find_all("a", class_="spell")
 
+    if raw == []:
+        return request
+
     # С помощью регулярных выражений сотавляем только запрос.
     new_name = re.sub(u'[^А-Яа-я\s]*', u'', str(raw[0])).lstrip()
     return(new_name.title())
