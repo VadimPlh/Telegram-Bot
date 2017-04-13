@@ -21,7 +21,7 @@ def chat():
         keyboard.row("Выбрать aвтора")
         keyboard.row("Ненужная кнопка")
 
-        bot_msg = bot.send_message(message.chat.id, "Привет, что ты хочещь сделать?", reply_markup=keyboard)
+        bot_msg = bot.send_message(message.chat.id, "Привет, что вы хотите сделать?", reply_markup=keyboard)
         bot.register_next_step_handler(bot_msg, handler)
 
     # Обработчик действий пользователя.
@@ -34,6 +34,7 @@ def chat():
             bot_msg = bot.send_message(message.chat.id, "Введите название")
             bot.register_next_step_handler(bot_msg, choose_book)
 
+    # Выбор автора.
     def choose_author(message):
         writer = message.text
         writers[message.chat.id] = writer
@@ -46,9 +47,15 @@ def chat():
             def yes_or_no(message):
                 if message.text == "Да":
                     writers[message.chat.id] = myparser.check_typos(writers[message.chat.id])
-
-
-
+                keyboard = telebot.types.ReplyKeyboardMarkup(
+                    resize_keyboard=True,
+                    one_time_keyboard=True)
+                keyboard.row("Выбрать книгу")
+                keyboard.row("Ненужная Кнопка")
+                bot_msg = bot.send_message(message.chat.id,
+                                           "Что вы хотите сделать дальше?",
+                                           reply_markup=keyboard)
+                bot.register_next_step_handler(bot_msg, handler)
 
             keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
                                                          one_time_keyboard=True)
@@ -57,10 +64,17 @@ def chat():
                                        + new_writer, reply_markup=keyboard)
             bot.register_next_step_handler(bot_msg, yes_or_no)
 
-    def choose_book(message):
+        else:
+            keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                                         one_time_keyboard=True)
+            keyboard.row("Выбрать книгу")
+            keyboard.row("Ненужная Кнопка")
+            bot_msg = bot.send_message(message.chat.id, "Что вы хотите сделать дальше?",
+                                       reply_markup=keyboard)
+            bot.register_next_step_handler(bot_msg, handler)
 
-
-
+    # Выбор книги.
+    #def choose_book(message):
 
     start_bot()
 
