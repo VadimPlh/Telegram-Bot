@@ -76,6 +76,7 @@ def chat():
     # Выбор книги.
     #def choose_book(message):
 
+
     start_bot()
 
 if __name__ == "__main__":
