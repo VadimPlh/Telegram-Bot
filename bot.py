@@ -1,11 +1,12 @@
-import telebot
+import classclient
 import myparser
+import telebot
 
 TOKEN = '304243519:AAGRSN21G8Ft0eO5QBKlf79-q-dpSnzjrJA'
 bot = telebot.TeleBot(TOKEN)
 
 def chat():
-    writers = {}
+    clients = {}
 
     def start_bot():
 
@@ -15,6 +16,9 @@ def chat():
     # Обработчик команды /start.
     @bot.message_handler(commands=['start'])
     def handler_start(message):
+        client = classclient.Client(message.chat.id)
+        clients[message.chat.id] = client
+
         #Создадим клавиатуру с разными вариантами.
         keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
                                                     one_time_keyboard=True)
@@ -37,7 +41,7 @@ def chat():
     # Выбор автора.
     def choose_author(message):
         writer = message.text
-        writers[message.chat.id] = writer
+        clients[message.chat.id].append_writer(writer)
         new_writer = myparser.check_typos(writer)
 
         # Если удалось исправить опечатку, то предложим пользователю изменить выбор.
@@ -46,7 +50,8 @@ def chat():
             # Функция для изменения имени.
             def yes_or_no(message):
                 if message.text == "Да":
-                    writers[message.chat.id] = myparser.check_typos(writers[message.chat.id])
+                    clients[message.chat.id].append_writer(myparser.check_typos(writer))
+
                 keyboard = telebot.types.ReplyKeyboardMarkup(
                     resize_keyboard=True,
                     one_time_keyboard=True)
@@ -74,7 +79,20 @@ def chat():
             bot.register_next_step_handler(bot_msg, handler)
 
     # Выбор книги.
-    #def choose_book(message):
+    def choose_book(message):
+        name_of_book = message.text
+
+        clients[message.chat.id].append_books(clients[message.chat.id].writer_,
+                                              name_of_book)
+
+        print(clients[message.chat.id].books_)
+        message_for_client = "Какую книгу вы хотите выбрать?\n"
+        for i,book in enumerate(clients[message.chat.id].books_.keys()):
+            message_for_client += str(i) + ") " +  book + "\n"
+
+        print(message_for_client)
+
+        bot_msg = bot.send_message(message.chat.id, message_for_client, reply_markup=None)
 
 
     start_bot()
