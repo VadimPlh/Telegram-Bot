@@ -54,10 +54,25 @@ def books(name_of_writer, name_of_book):
             name_writers = re.sub(u'[^А-Яа-я1-9\s]*', u'',
                                   tmp2_writers[1].lstrip())
 
-            if (name_writers.lower().find(tmp[0].lower()) != -1) and \
-                    (name_writers.lower().find(tmp[1].lower()) != -1):
+            flag = True
+            for words in name_of_writer.split(" "):
+                if (name_writers.lower().find(tmp[0].lower()) == -1):
+                    flag = False
+            if flag:
                 name_books = re.sub(u'[^А-Яа-я1-9\s]*', u'',
                                     tmp2_books[1].lstrip())
                 books[name_books] = "http://knijky.ru/" + tmp2_books[0]
 
     return(books)
+
+def max_page(url):
+    """
+    Находит максимальную страницу.
+    :param url: string
+    :return: int (max page)
+    """
+    page = requests.get(url)
+    soup = BeautifulSoup(page.text, "html.parser")
+    pages = soup.find_all("div", class_="goto_next_page")
+    number_pages = str(pages).split('">')
+    return re.sub(u'[^1-9\s]*', u'',number_pages[-2].lstrip())
