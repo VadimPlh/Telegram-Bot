@@ -101,20 +101,20 @@ def chat():
         else:
             message_for_client = "Какую книгу вы хотите выбрать?\n(Отправьте ее номер)\n"
             for i,book in enumerate(clients[message.chat.id].books_.keys()):
-                message_for_client += str(i) + ") " +  book + "\n"
+                message_for_client += str(i + 1) + ") " +  book + "\n"
 
             bot_msg = bot.send_message(message.chat.id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_page)
 
     def choose_page(message):
         number_book = message.text
-        clients[message.chat.id].book_ = int(number_book)
+        clients[message.chat.id].book_ = int(number_book) - 1
 
         list_of_books = list(clients[message.chat.id].books_.values())
         max_number_of_page = myparser.max_page(list_of_books[int(number_book)])
         clients[message.chat.id].max_page_ = max_number_of_page
 
-        bot_msg = bot.send_message(message.chat.id, "Выберете страницу от 0 до "
+        bot_msg = bot.send_message(message.chat.id, "Выберете страницу от 1 до "
                                    + str(max_number_of_page))
 
         bot.register_next_step_handler(bot_msg, choose_line)
@@ -122,9 +122,12 @@ def chat():
     def choose_line(message):
         tmp = message.text
         if (tmp.isdigit()):
-            number_line = int(tmp)
-            if (number_line > 0 and number_line <= clients[message.chat.id].max_page_):
-                number_line -= 1
+            number_page = int(tmp)
+            if (number_page > 0 and number_page <= clients[message.chat.id].max_page_):
+                clients[message.chat.id].page_ = number_page - 1
+
+                bot_msg = bot.send_message(message.chat.id, "Введите номер строки")
+                bot.register_next_step_handler(bot_msg, get_answer)
             else:
                 bot_msg = bot.send_message(message.chat.id, "Попробуйте снова!\n"
                                                             "Введите страницу")
@@ -136,6 +139,27 @@ def chat():
 
             bot.register_next_step_handler(bot_msg, choose_line)
 
+    def get_answer(message):
+        line = message.text
+        if (line.isdigit()):
+            list_of_books = list(clients[message.chat.id].books_.values())
+            url = list_of_books[clients[message.chat.id].book_]
+            page = clients[message.chat.id].page_
+            ans = myparser.get_line(url, page, int(line))
+            if (ans == "*ERROR*"):
+                bot_msg = bot.send_message(message.chat.id,
+                                           "Попробуйте снова!\n"
+                                           "Введите номер строки")
+
+                bot.register_next_step_handler(bot_msg, get_answer)
+            else:
+                bot_msg = bot.send_message(message.chat.id, ans)
+
+        else:
+            bot_msg = bot.send_message(message.chat.id, "Попробуйте снова!\n"
+                                                        "Введите номер строки")
+
+            bot.register_next_step_handler(bot_msg, get_answer)
 
 
     start_bot()

@@ -23,7 +23,7 @@ def check_typos(request):
     new_name = re.sub(u'[^А-Яа-я\s]*', u'', str(raw[0])).lstrip()
     return(new_name.title())
 
-def books(name_of_writer, name_of_book):
+def get_books(name_of_writer, name_of_book):
     """
     Эта функция возвращает нам строку из нудной книги.
     :param writers: sting
@@ -75,4 +75,28 @@ def max_page(url):
     soup = BeautifulSoup(page.text, "html.parser")
     pages = soup.find_all("div", class_="goto_next_page")
     number_pages = str(pages).split('">')
-    return re.sub(u'[^1-9\s]*', u'',number_pages[-2].lstrip())
+    return int(re.sub(u'[^1-9\s]*', u'',number_pages[-2].lstrip()))
+
+def get_line(url, num_page, line):
+    """
+    Возвращает нужную строку из книги.
+    :param url: string
+    :param num_page: int
+    :param line: int
+    :return: string
+    """
+    if (num_page != 0):
+        url += "?page=" + str(num_page)
+
+    page = requests.get(url)
+    soup = BeautifulSoup(page.text, "html.parser")
+    body = str(soup).split('<table><tr><td>')
+
+    text = body[1].split('<div class="content_banner">')[0]
+    text = text.replace("</td></tr></table></div></div></div></div></div></div></div></div></div></div></div></body></html>", "")
+    lines = text.split("<br/>")
+
+    if (line >= len(lines)):
+        return "*ERROR*"
+    else:
+        return lines[line]
