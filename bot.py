@@ -9,6 +9,7 @@ bot = telebot.TeleBot(TOKEN)
 
 def chat():
     clients = {}
+    all_writers = myparser.find_all_writers()
 
     def start_bot():
 

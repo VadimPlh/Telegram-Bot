@@ -100,3 +100,19 @@ def get_line(url, num_page, line):
         return "*ERROR*"
     else:
         return lines[line]
+
+def find_all_writers():
+    url_writers = {}
+    for i in range(48):
+        url = "http://knijky.ru/authors?author_zhanr=All&page={}".format(i)
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, "html.parser")
+        writers_raw = soup.find_all("span", class_="field-content")
+        for body in writers_raw:
+            body = str(body)
+            tmp1 = body.split('href="')
+            tmp2 = tmp1[1].split('">')
+            name = re.sub(u'[^А-Яа-я1-9\s]*', u'',tmp2[1])
+            url_writers[name] = "http://knijky.ru" + tmp2[0]
+    print (url_writers)
+    return url_writers
