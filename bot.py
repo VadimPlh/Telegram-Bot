@@ -30,18 +30,50 @@ def chat():
         bot_msg = bot.send_message(message.chat.id, "Что вы хотите сделать?", reply_markup=keyboard)
         bot.register_next_step_handler(bot_msg, handler)
 
+    # Обработчик команды /stop
+    @bot.message_handler(commands=['stop'])
+    def handler_stop(message):
+        while True:
+            continue
+
     # Обработчик действий пользователя.
     def handler(message):
+        keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                                     one_time_keyboard=True)
+        keyboard.row("Выбрать автора")
+        keyboard.row("Ненужная кнопка")
+
+        if (message.content_type != "text"):
+            bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
+                                                        "Попробуйте снова!",
+                                       reply_markup=keyboard)
+            bot.register_next_step_handler(bot_msg, handler)
+            return
+
         if message.text == "Выбрать автора":
             bot_msg = bot.send_message(message.chat.id, "Введите имя и фамилию")
             bot.register_next_step_handler(bot_msg, choose_author)
+            return
 
         if message.text == "Выбрать книгу":
             bot_msg = bot.send_message(message.chat.id, "Введите название")
             bot.register_next_step_handler(bot_msg, choose_book)
+            return
+
+        bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
+                                                    "Попробуйте снова!",
+                                   reply_markup=keyboard)
+        bot.register_next_step_handler(bot_msg, handler)
+
 
     # Выбор автора.
     def choose_author(message):
+        if (message.content_type != "text"):
+            bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
+                                                        "Попробуйте снова!")
+            bot.register_next_step_handler(bot_msg, choose_author)
+            return
+
         writer = message.text
         clients[message.chat.id].append_writer(writer)
         new_writer = myparser.check_typos(writer)
@@ -82,6 +114,12 @@ def chat():
 
     # Выбор книги.
     def choose_book(message):
+        if (message.content_type != "text"):
+            bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
+                                                        "Попробуйте снова!")
+            bot.register_next_step_handler(bot_msg, choose_author)
+            return
+
         name_of_book = message.text
 
         clients[message.chat.id].append_books(clients[message.chat.id].writer_,
