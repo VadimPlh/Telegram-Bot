@@ -22,7 +22,7 @@ def chat():
         client = classclient.Client(message.chat.id)
         clients[message.chat.id] = client
 
-        #Создадим клавиатуру с разными вариантами.
+        # Создадим клавиатуру с разными вариантами.
         keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
                                                     one_time_keyboard=True)
         keyboard.row("Выбрать автора")
@@ -61,6 +61,11 @@ def chat():
             bot.register_next_step_handler(bot_msg, choose_book)
             return
 
+        if message.text == "Получить несколько случайных книг":
+            bot_msg = bot.send_message(message.chat.id, "Введите кол-во книг")
+            bot.register_next_step_handler(bot_msg, choose_rand_book)
+            return
+
         bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
                                                     "Попробуйте снова!",
                                    reply_markup=keyboard)
@@ -91,7 +96,7 @@ def chat():
                     resize_keyboard=True,
                     one_time_keyboard=True)
                 keyboard.row("Выбрать книгу")
-                keyboard.row("Ненужная Кнопка")
+                keyboard.row("Получить несколько случайных книг")
                 bot_msg = bot.send_message(message.chat.id,
                                            "Что вы хотите сделать дальше?",
                                            reply_markup=keyboard)
@@ -108,7 +113,7 @@ def chat():
             keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
                                                          one_time_keyboard=True)
             keyboard.row("Выбрать книгу")
-            keyboard.row("Ненужная Кнопка")
+            keyboard.row("Получить несколько случайных книг")
             bot_msg = bot.send_message(message.chat.id, "Что вы хотите сделать дальше?",
                                        reply_markup=keyboard)
             bot.register_next_step_handler(bot_msg, handler)
@@ -131,6 +136,7 @@ def chat():
                                                          one_time_keyboard=True)
             keyboard.row("Выбрать автора")
             keyboard.row("Выбрать книгу")
+            keyboard.row("Получить несколько случайных книг")
 
             bot_msg = bot.send_message(message.chat.id, "Такой книги нет("
                                                         "Повторите попытку!\n"
@@ -144,6 +150,14 @@ def chat():
 
             bot_msg = bot.send_message(message.chat.id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_page)
+
+    def choose_rand_book(message):
+        if (message.content_type != "text"):
+            bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
+                                                        "Попробуйте снова!")
+            bot.register_next_step_handler(bot_msg, choose_rand_book)
+            return
+        bot
 
     def choose_page(message):
         number_book = message.text
@@ -160,7 +174,7 @@ def chat():
 
     def choose_line(message):
         tmp = message.text
-        if (tmp.isdigit()):
+        if tmp.isdigit():
             number_page = int(tmp)
             if (number_page > 0 and number_page <= clients[message.chat.id].max_page_):
                 clients[message.chat.id].page_ = number_page - 1
@@ -180,12 +194,12 @@ def chat():
 
     def get_answer(message):
         line = message.text
-        if (line.isdigit()):
+        if line.isdigit():
             list_of_books = list(clients[message.chat.id].books_.values())
             url = list_of_books[clients[message.chat.id].book_]
             page = clients[message.chat.id].page_
             ans = myparser.get_line(url, page, int(line))
-            if (ans == "*ERROR*"):
+            if ans == "*ERROR*":
                 bot_msg = bot.send_message(message.chat.id,
                                            "Попробуйте снова!\n"
                                            "Введите номер строки")
@@ -199,7 +213,6 @@ def chat():
                                                         "Введите номер строки")
 
             bot.register_next_step_handler(bot_msg, get_answer)
-
 
     start_bot()
 
