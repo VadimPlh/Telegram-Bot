@@ -99,6 +99,8 @@ def get_line(url, num_page, line):
     text = text.replace(
         "</td></tr></table></div></div></div></div></div></div></div></div></div></div></div></body></html>",
         "")
+    text = text.replace("<p>", "<br/>")
+    text = text.replace("</p>", "<br/>")
     lines = text.split("<br/>")
 
     if (line >= len(lines)):
@@ -125,6 +127,7 @@ def find_all_writers():
 
 def find_all_books(writer, url_writers):
     url_books = {}
+    writer = writer.lower()
     url = url_writers[writer]
     page = requests.get(url)
     soup = BeautifulSoup(page.text, "html.parser")
@@ -142,6 +145,9 @@ def find_all_books(writer, url_writers):
         soup = BeautifulSoup(page.text, "html.parser")
         books_raw = soup.find_all("span", class_="field-content")
         for book in books_raw:
-
-
-find_all_books("рэй брэдбери", find_all_writers())
+            raw_array = str(book).split('<span class="field-content"><a href="/books/')
+            if len(raw_array) == 2 and raw_array[0] == "":
+                name = re.sub(u'[^А-Яа-я1-9\s]*', u'', raw_array[1].split('">')[1])
+                url = raw_array[1].split('">')[0]
+                url_books[name] = 'http://knijky.ru/books/' + url
+    return url_books
