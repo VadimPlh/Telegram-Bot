@@ -1,15 +1,14 @@
 import classclient
 import myparser
+import random
 import telebot
-
-#TODO: Сделать, что бы не ломался
 
 TOKEN = '304243519:AAGRSN21G8Ft0eO5QBKlf79-q-dpSnzjrJA'
 bot = telebot.TeleBot(TOKEN)
-all_writers = myparser.find_all_writers()
 
 def chat():
     clients = {}
+    all_writers = myparser.find_all_writers()
 
     def start_bot():
         # Заставим бота "висеть" и ждать команды.
@@ -25,8 +24,7 @@ def chat():
 
         message_for_client = "Здравствуйте, я бот, который гадает по книгам.\n" \
                              "Для начала вам стоит вызвать команду \help и " \
-                             "посмотреть все мои инструкции!\nХороших предсказаний!\n" \
-                             "Подождите немного я загружаю базу данных писателей."
+                             "посмотреть все мои инструкции!\nХороших предсказаний!\n"
         chat_id = message.chat.id
         bot.send_message(chat_id, message_for_client)
 
@@ -39,6 +37,10 @@ def chat():
         chat_id = message.chat.id
 
         name_writer = message.text.replace("/choose_writer ", "")
+
+        if name_writer == "":
+            bot.send_message(chat_id, "Нужен 1 параметр")
+            return
 
         new_name = myparser.check_typos(name_writer)
         clients[chat_id].writer_ = name_writer
@@ -64,12 +66,17 @@ def chat():
     def choose_book_handler(message):
         chat_id = message.chat.id
 
+        name_book = message.text.replace("/choose_book ", "")
+
+        if name_book == "":
+            bot.send_message(chat_id, "Нужен 1 параметр")
+            return
+
         if clients[chat_id].writer_ == "":
             message_for_client = "Сначала выберете автора!"
             bot.send_message(chat_id, message_for_client)
             return
 
-        name_book = message.text.replace("/choose_book ", "")
         name_writer = clients[chat_id].writer_
         books = myparser.get_books(name_writer, name_book)
         clients[chat_id].books_ = books
@@ -87,6 +94,20 @@ def chat():
         clients[chat_id].max_book_ = len(books)
 
         bot_msg = bot.send_message(chat_id, message_for_client)
+        bot.register_next_step_handler(bot_msg, choose_book_number)
+
+    @bot.message_handler(commands=['k_random_books'])
+    def k_random_books(message):
+        chat_id = message.chat.id
+
+        if message.text.replace("/k_random_books ", "") != "":
+            bot.send_message(chat_id, "Команда не принимает аргументов")
+            return
+
+        if clients[chat_id].writer_ == "":
+            message_for_client = "Сначала выберете автора!"
+            bot.send_message(chat_id, message_for_client)
+            return
 
     def choose_book_number(message):
         chat_id = message.chat.id
@@ -99,17 +120,150 @@ def chat():
 
         number = int(number) - 1
 
-        if number < 0 and number >= clients[chat_id].max_book_:
+        if number < 0 or number >= clients[chat_id].max_book_:
             message_for_client = "Номер книги вне диапозона"
             bot.send_message(chat_id, message_for_client)
+            return
 
         clients[chat_id].book_ = number
+
+        list_of_book = list(clients[chat_id].books_.values())
+
+        max_page = myparser.max_page(list_of_book[number])
+        clients[chat_id].max_page_ = max_page
+
+        print(all_writers.keys())
         bot.send_message(chat_id, "Книга установлена")
 
+    @bot.message_handler(commands=['choose_page'])
+    def choose_page_handler(message):
+        chat_id = message.chat.id
+
+        if message.text.replace("/choose_page", "") != "":
+            bot.send_message(chat_id, "Команда не принимает аргументов")
+            return
+
+        if clients[chat_id].book_ == -1:
+            message_for_client = "Сначала выберете книгу!"
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        max_page = clients[chat_id].max_page_
+        message_for_client = "Выберите страницу от 1 до {}".format(max_page)
+        bot_msg = bot.send_message(chat_id, message_for_client)
+        bot.register_next_step_handler(bot_msg, choose_page_number)
+
+    def choose_page_number(message):
+        chat_id = message.chat.id
+
+        number = message.text
+
+        if message.content_type != "text" or not number.isdigit():
+            message_for_client = "Извините, я вас не могу понять=("
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        number = int(number) - 1
+
+        if number < 0 or number >= clients[chat_id].max_page_:
+            bot.send_message(chat_id, "Страница вне дипозона!")
+            return
+
+        clients[chat_id].page_ = number
+
+        bot.send_message(chat_id, "Страница выбрана")
+
+    @bot.message_handler(commands=['get_random_page'])
+    def get_random_page_handler:
+        return
+
+    @bot.message_handler(commands=['choose_line'])
+    def choose_line_handler(message):
+        chat_id = message.chat.id
+
+        if message.text.replace("/choose_line", "") != "":
+            bot.send_message(chat_id, "Команда не принимает аргументов")
+            return
+
+        if clients[chat_id].page_ == -1:
+            message_for_client = "Сначала выберете страницу!"
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        list_of_books = list(clients[message.chat.id].books_.values())
+        url = list_of_books[clients[message.chat.id].book_]
+        page = clients[message.chat.id].page_
+        clients[chat_id].lines_ = myparser.get_lines(url, page)
+
+        max_line = len(clients[chat_id].lines_)
+
+        message_for_client = "Введите строку от 1 до {}".format(max_line)
+        bot_msg = bot.send_message(chat_id, message_for_client)
+        bot.register_next_step_handler(bot_msg, choose_line_number)
+
+    def choose_line_number(message):
+        chat_id = message.chat.id
+
+        number = message.text
+
+        if message.content_type != "text" or not number.isdigit():
+            message_for_client = "Извините, я вас не могу понять=("
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        number = int(number) - 1
+
+        if number < 0 or number >= clients[chat_id].max_page_:
+            message_for_client = "Номер страницы вне диапозона"
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        clients[chat_id].line_ = number
+        bot.send_message(chat_id, "Строка установлена")
+
+    @bot.message_handler(commands=['get_random_line'])
+    def get_random_line_handler(message):
+        random.seed
+
+        chat_id = message.chat.id
+
+        if message.text.replace("/get_random_line", "") != "":
+            bot.send_message(chat_id, "Команда не принимает аргументов")
+            return
+
+        if clients[chat_id].page_ == -1:
+            message_for_client = "Сначала выберете страницу!"
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        list_of_books = list(clients[message.chat.id].books_.values())
+        url = list_of_books[clients[message.chat.id].book_]
+        page = clients[message.chat.id].page_
+        clients[chat_id].lines_ = myparser.get_lines(url, page)
+
+        max_line = len(clients[chat_id].lines_)
+        number_line = random.randint(0, max_line - 1)
+
+        clients[chat_id].line_ = number_line
+        bot.send_message(chat_id, "Выбрана {} строка".format(number_line + 1))
 
 
+    @bot.message_handler(commands=['show'])
+    def show_handler(message):
+        chat_id = message.chat.id
 
+        if message.text.replace("/show", "") != "":
+            bot.send_message(chat_id, "Команда не принимает аргументов")
+            return
 
+        if clients[chat_id].line_ == -1:
+            message_for_client = "Сначала выберете строку!"
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        number_line = clients[chat_id].line_
+        line = clients[chat_id].lines_[number_line]
+        bot.send_message(chat_id, line)
 
 
 

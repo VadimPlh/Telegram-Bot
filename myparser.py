@@ -80,12 +80,11 @@ def max_page(url):
     return int(re.sub(u'[^1-9\s]*', u'', number_pages[-2].lstrip()))
 
 
-def get_line(url, num_page, line):
+def get_lines(url, num_page):
     """
     Возвращает нужную строку из книги.
     :param url: string
     :param num_page: int
-    :param line: int
     :return: string
     """
     if (num_page != 0):
@@ -97,16 +96,11 @@ def get_line(url, num_page, line):
 
     text = body[1].split('<div class="content_banner">')[0]
     text = text.replace(
-        "</td></tr></table></div></div></div></div></div></div></div></div></div></div></div></body></html>",
-        "")
+        "</td></tr></table></div></div></div></div></div></div></div></div></div></div></div></body></html>", "")
     text = text.replace("<p>", "<br/>")
     text = text.replace("</p>", "<br/>")
     lines = text.split("<br/>")
-
-    if (line >= len(lines)):
-        return "*ERROR*"
-    else:
-        return lines[line]
+    return lines
 
 
 def find_all_writers():
