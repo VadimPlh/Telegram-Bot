@@ -1,50 +1,159 @@
 import classclient
-import numpy
 import myparser
-import random
 import telebot
 
 #TODO: Сделать, что бы не ломался
 
 TOKEN = '304243519:AAGRSN21G8Ft0eO5QBKlf79-q-dpSnzjrJA'
 bot = telebot.TeleBot(TOKEN)
+all_writers = myparser.find_all_writers()
 
 def chat():
     clients = {}
-    all_writers = myparser.find_all_writers()
 
     def start_bot():
-
         # Заставим бота "висеть" и ждать команды.
         bot.polling(none_stop=True)
 
-    # Обработчик команды /start.
+    @bot.message_handler(commands=['start'])
+    def start_handler(message):
+
+        # Занесем клиентов в базу.
+        chat_id = message.chat.id
+        client = classclient.Client(chat_id)
+        clients[message.chat.id] = client
+
+        message_for_client = "Здравствуйте, я бот, который гадает по книгам.\n" \
+                             "Для начала вам стоит вызвать команду \help и " \
+                             "посмотреть все мои инструкции!\nХороших предсказаний!\n" \
+                             "Подождите немного я загружаю базу данных писателей."
+        chat_id = message.chat.id
+        bot.send_message(chat_id, message_for_client)
+
+    @bot.message_handler(commands=['help'])
+    def help_handler(message):
+        a = 5
+
+    @bot.message_handler(commands=['choose_writer'])
+    def choose_writer_handler(message):
+        chat_id = message.chat.id
+
+        name_writer = message.text.replace("/choose_writer ", "")
+
+        new_name = myparser.check_typos(name_writer)
+        clients[chat_id].writer_ = name_writer
+
+        if new_name != name_writer:
+            message_for_client = "Может вы имели в виду {}".format(new_name)
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            keyboard.add(telebot.types.InlineKeyboardButton(text="Да", callback_data=new_name),
+                         telebot.types.InlineKeyboardButton(text="Нет", callback_data=name_writer))
+            bot.send_message(chat_id, message_for_client, reply_markup=keyboard)
+            return
+
+        bot.send_message(chat_id, "Автор установлен")
+
+
+    @bot.callback_query_handler(func=lambda name: True)
+    def inline(name):
+        chat_id = name.message.chat.id
+        clients[chat_id].writer_ = name.data
+        bot.send_message(chat_id, "Автор установлен")
+
+    @bot.message_handler(commands=['choose_book'])
+    def choose_book_handler(message):
+        chat_id = message.chat.id
+
+        if clients[chat_id].writer_ == "":
+            message_for_client = "Сначала выберете автора!"
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        name_book = message.text.replace("/choose_book ", "")
+        name_writer = clients[chat_id].writer_
+        books = myparser.get_books(name_writer, name_book)
+        clients[chat_id].books_ = books
+        print(books)
+
+        if books == {}:
+            message_for_client = "Такой книги нет("
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        message_for_client = "Какую книгу вы хотите выбрать?\n(Отправьте ее номер)\n"
+        for i, book in enumerate(books.keys()):
+            message_for_client += str(i + 1) + ") " + book + "\n"
+
+        clients[chat_id].max_book_ = len(books)
+
+        bot_msg = bot.send_message(chat_id, message_for_client)
+
+    def choose_book_number(message):
+        chat_id = message.chat.id
+        number = message.text
+
+        if message.content_type != "text" or not number.isdigit():
+            message_for_client = "Извините, я вас не могу понять=("
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        number = int(number) - 1
+
+        if number < 0 and number >= clients[chat_id].max_book_:
+            message_for_client = "Номер книги вне диапозона"
+            bot.send_message(chat_id, message_for_client)
+
+        clients[chat_id].book_ = number
+        bot.send_message(chat_id, "Книга установлена")
+
+
+
+
+
+
+
+
+
+    # Показывает всех вызможных писателей.
+    @bot.message_handler(commands=['show_writers'])
+    def show_writers_handler(message):
+
+        message_for_client = "Список писателей:\n"
+        for i, name in enumerate(all_writers.keys()):
+            message_for_client += "{}) {}".format(i, name)
+
+        chat_id = message.chat.id
+        bot.send_message(chat_id, message_for_client)
+
+
+    """"# Обработчик команды /start.
     @bot.message_handler(commands=['start'])
     def handler_start(message):
-        client = classclient.Client(message.chat.id)
+        client = client.Client(message.chat.id)
         clients[message.chat.id] = client
 
         # Создадим клавиатуру с разными вариантами.
         keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
                                                     one_time_keyboard=True)
         keyboard.row("Выбрать автора")
-        keyboard.row("Ненужная кнопка")
+        keyboard.row("Помощь")
 
         bot_msg = bot.send_message(message.chat.id, "Что вы хотите сделать?", reply_markup=keyboard)
         bot.register_next_step_handler(bot_msg, handler)
 
-    # Обработчик команды /stop
-    @bot.message_handler(commands=['stop'])
-    def handler_stop(message):
-        while True:
-            continue
-
     # Обработчик действий пользователя.
     def handler(message):
-        keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
+        if clients[message.chat.id].writer_ == "":
+            keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                                         one_time_keyboard=True)
+            keyboard.row("Выбрать автора")
+        else:
+            keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
                                                      one_time_keyboard=True)
-        keyboard.row("Выбрать автора")
-        keyboard.row("Ненужная кнопка")
+            keyboard.row("Выбрать автора")
+            keyboard.row("Выбрать книгу")
+            keyboard.row("Получить несколько случайных книг")
+            keyboard.row("Закончить")
 
         if (message.content_type != "text"):
             bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
@@ -64,14 +173,27 @@ def chat():
             return
 
         if message.text == "Получить несколько случайных книг":
-            writers = myparser.find_all_writers()
+            all_writers = myparser.find_all_writers()
             name_writers = clients[message.chat.id].writer_
-            clients[message.chat.id].books_ = myparser.find_all_books(name_writers, writers)
+            list_writers = []
+            for name in list(all_writers.keys()):
+                list_writers.append(name.lower())
+            if name_writers.lower() not in list_writers:
+                message_for_client = "Выберете возможного автора из списка\n"
+                for name in list(all_writers.keys()):
+                    if name.lower().find(name_writers.lower()) != -1:
+                        message_for_client += "{}\n".format(name)
+                bot_msg = bot.send_message(message.chat.id, message_for_client)
+                bot.register_next_step_handler(bot_msg, choose_author2)
+                return
+
+            clients[message.chat.id].books_ = myparser.find_all_books(name_writers, all_writers)
             max_books = len(clients[message.chat.id].books_)
             bot_msg = bot.send_message(message.chat.id, "Введите кол-во книг < "
                                        + str(max_books))
             bot.register_next_step_handler(bot_msg, choose_rand_book)
             return
+
 
         bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
                                                     "Попробуйте снова!",
@@ -84,7 +206,7 @@ def chat():
         if (message.content_type != "text"):
             bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
                                                         "Попробуйте снова!")
-            bot.register_next_step_handler(bot_msg, choose_author)
+            bot.register_next_step_handler(bot_msg, choose_author2)
             return
 
         writer = message.text
@@ -125,18 +247,41 @@ def chat():
                                        reply_markup=keyboard)
             bot.register_next_step_handler(bot_msg, handler)
 
-    # Выбор книги.
-    def choose_book(message):
+    def choose_author2(message):
         if (message.content_type != "text"):
             bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
                                                         "Попробуйте снова!")
-            bot.register_next_step_handler(bot_msg, choose_author)
+            bot.register_next_step_handler(bot_msg, choose_author2)
             return
 
-        name_of_book = message.text
+        clients[message.chat.id].writer_ = message.text
+        keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                                     one_time_keyboard=True)
+        keyboard.row("Выбрать книгу")
+        keyboard.row("Получить несколько случайных книг")
+        bot_msg = bot.send_message(message.chat.id, "Что вы хотите сделать дальше?",
+                                   reply_markup=keyboard)
+        bot.register_next_step_handler(bot_msg, handler)
 
+
+    # Выбор книги.
+    def choose_book(message):
+        name_of_book = message.text
         clients[message.chat.id].append_books(clients[message.chat.id].writer_,
                                               name_of_book)
+
+        if (message.content_type != "text"):
+            keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                                         one_time_keyboard=True)
+            keyboard.row("Выбрать автора")
+            keyboard.row("Выбрать книгу")
+            keyboard.row("Получить несколько случайных книг")
+            keyboard.row("Завершить")
+            bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
+                                                        "Попробуйте снова!",
+                                       reply_markup=keyboard)
+            bot.register_next_step_handler(bot_msg, handler)
+            return
 
         if (clients[message.chat.id].books_ == {}):
             keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
@@ -145,18 +290,19 @@ def chat():
             keyboard.row("Выбрать книгу")
             keyboard.row("Получить несколько случайных книг")
 
-            bot_msg = bot.send_message(message.chat.id, "Такой книги нет("
-                                                        "Повторите попытку!\n"
+            bot_msg = bot.send_message(message.chat.id, "Такой книги нет(""
                                                         "Что вы хотите сделать?",
                                        reply_markup=keyboard)
             bot.register_next_step_handler(bot_msg, handler)
-        else:
-            message_for_client = "Какую книгу вы хотите выбрать?\n(Отправьте ее номер)\n"
-            for i,book in enumerate(clients[message.chat.id].books_.keys()):
-                message_for_client += str(i + 1) + ") " +  book + "\n"
+            return
 
-            bot_msg = bot.send_message(message.chat.id, message_for_client)
-            bot.register_next_step_handler(bot_msg, choose_page)
+        message_for_client = "Какую книгу вы хотите выбрать?\n(Отправьте ее номер)\n"
+
+        for i,book in enumerate(clients[message.chat.id].books_.keys()):
+            message_for_client += str(i + 1) + ") " +  book + "\n"
+
+        bot_msg = bot.send_message(message.chat.id, message_for_client)
+        bot.register_next_step_handler(bot_msg, choose_page)
 
     def choose_rand_book(message):
         if (message.content_type != "text"):
@@ -205,11 +351,20 @@ def chat():
 
 
     def choose_page(message):
+        if (message.content_type != "text"):
+            message_for_client = "Какую книгу вы хотите выбрать?\n(Отправьте ее номер)\n"
+            for i, book in enumerate(clients[message.chat.id].books_.keys()):
+                message_for_client += str(i + 1) + ") " + book + "\n"
+
+            bot_msg = bot.send_message(message.chat.id, message_for_client)
+            bot.register_next_step_handler(bot_msg, choose_page)
+            return
+
         number_book = message.text
         clients[message.chat.id].book_ = int(number_book) - 1
 
         list_of_books = list(clients[message.chat.id].books_.values())
-        max_number_of_page = myparser.max_page(list_of_books[int(number_book)])
+        max_number_of_page = myparser.max_page(list_of_books[int(number_book) - 1])
         clients[message.chat.id].max_page_ = max_number_of_page
 
         bot_msg = bot.send_message(message.chat.id, "Выберете страницу от 1 до "
@@ -218,6 +373,12 @@ def chat():
         bot.register_next_step_handler(bot_msg, choose_line)
 
     def choose_line(message):
+        if message.content_type != "text":
+            bot_msg = bot.send_message(message.chat.id, "Я вас не понимаю."
+                                                        "Попробуйте снова!")
+            bot.register_next_step_handler(bot_msg, choose_line)
+            return
+
         tmp = message.text
         if tmp.isdigit():
             number_page = int(tmp)
@@ -258,6 +419,7 @@ def chat():
                                                         "Введите номер строки")
 
             bot.register_next_step_handler(bot_msg, get_answer)
+            """
 
     start_bot()
 

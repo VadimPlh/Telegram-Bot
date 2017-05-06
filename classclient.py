@@ -7,8 +7,12 @@ class Client:
         self.books_ = {}
         self.writer_ = ""
         self.book_ = -1
+        self.max_book_ = -1
         self.max_page_ = -1
         self.page_ = -1
+        self.maxLine_ = -1
+        self.line_ = -1
+        self.all_writers_ = {}
 
     def append_writer(self, name_of_writer):
         self.writer_ = name_of_writer
