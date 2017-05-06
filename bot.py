@@ -1,5 +1,6 @@
 import classclient
 import myparser
+import numpy
 import random
 import telebot
 
@@ -38,6 +39,8 @@ def chat():
 
         name_writer = message.text.replace("/choose_writer", "")
 
+        name_writer = name_writer.lstrip()
+
         if name_writer == "":
             bot.send_message(chat_id, "Нужен 1 параметр")
             return
@@ -67,6 +70,8 @@ def chat():
 
         name_book = message.text.replace("/choose_book", "")
 
+        name_book = name_book.lstrip()
+
         if name_book == "":
             bot.send_message(chat_id, "Нужен 1 параметр")
             return
@@ -95,11 +100,11 @@ def chat():
         bot_msg = bot.send_message(chat_id, message_for_client)
         bot.register_next_step_handler(bot_msg, choose_book_number)
 
-    @bot.message_handler(commands=['k_random_books'])
-    def k_random_books(message):
+    @bot.message_handler(commands=['get_k_random_books'])
+    def get_k_random_books(message):
         chat_id = message.chat.id
 
-        if message.text.replace("/k_random_books", "") != "":
+        if message.text.replace("/get_k_random_books", "") != "":
             bot.send_message(chat_id, "Команда не принимает аргументов")
             return
 
@@ -107,6 +112,73 @@ def chat():
             message_for_client = "Сначала выберете автора!"
             bot.send_message(chat_id, message_for_client)
             return
+
+        list_writers_raw = list(all_writers.keys())
+        list_writers = []
+        name_writer = clients[chat_id].writer_
+
+        for name in list_writers_raw:
+            list_writers.append(name.lower())
+
+        print(list_writers)
+        print(name_writer)
+
+        if name_writer.lower() not in list_writers:
+            message_for_client = "Смените имя автра на возможного автора из списка\n"
+            for name in list_writers:
+                print(name)
+                tmp_name_writers = name_writer.split(" ")
+                flag = True
+                for word in tmp_name_writers:
+                    if name.find(word) == -1:
+                        flag = False
+                if flag:
+                    message_for_client += "{}".format(name)
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        books = myparser.find_all_books(name_writer, all_writers)
+        max_books = len(books)
+        clients[chat_id].max_book = max_books
+        clients[message.chat.id].books_ = books
+        max_books = books
+
+        message_for_client = "Выберете кол-во книг от 1 до {}".format(max_books)
+        bot.msg = bot.send_message(chat_id, message_for_client)
+        bot.register_next_step_handler(bot.msg, get_books)
+
+    def get_books(message):
+        chat_id = message.chat.id
+        count = message.text
+
+        if message.content_type != "text" or not count.isdigit():
+            message_for_client = "Извините, я вас не могу понять=("
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        count = int(count) - 1
+        if count < 0 or count >= clients[chat_id].max_book_:
+            message_for_client = "Номер книги вне диапозона"
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        name_books = list(clients[message.chat.id].books_.keys())
+        new_name_books = numpy.random.choice(name_books, count, replace=False)
+        new_books = {}
+        for name in new_name_books:
+            new_books[name] = clients[message.chat.id].books_[name]
+
+        clients[message.chat.id].books_ = new_books
+        clients[message.chat.id].max_book = count + 1
+
+        message_for_client = "Какую книгу вы хотите выбрать?\n(Отправьте ее номер)\n"
+        for i, book in enumerate(new_books.keys()):
+            message_for_client += str(i + 1) + ") " + book + "\n"
+
+        bot_msg = bot.send_message(chat_id, message_for_client)
+        bot.register_next_step_handler(bot_msg, choose_book_number)
+
+
 
     def choose_book_number(message):
         chat_id = message.chat.id
