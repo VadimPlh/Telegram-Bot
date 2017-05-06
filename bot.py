@@ -31,7 +31,16 @@ def chat():
 
     @bot.message_handler(commands=['help'])
     def help_handler(message):
-        a = 5
+        message_for_client = "Список команд для бота:" \
+        "/start - начать предсказание\n"
+        '/choose_writer "Имя" "Фамилия" - выбрать автора\n' \
+        '/choose_book "Название" - выбрать название книги\n' \
+        '/get_k_random_books - получить k случайных книг выбранного автора\n' \
+        '/choose_page - выбрать страницу\n' \
+        '/get_random_page - получить рандомную страницу\n' \
+        '/choose_line - выбрать строку\n' \
+        '/get_random_line - получить рандомную строку\n' \
+        '/show - показать предсказание'
 
     @bot.message_handler(commands=['choose_writer'])
     def choose_writer_handler(message):
