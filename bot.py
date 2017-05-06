@@ -36,7 +36,7 @@ def chat():
     def choose_writer_handler(message):
         chat_id = message.chat.id
 
-        name_writer = message.text.replace("/choose_writer ", "")
+        name_writer = message.text.replace("/choose_writer", "")
 
         if name_writer == "":
             bot.send_message(chat_id, "Нужен 1 параметр")
@@ -55,7 +55,6 @@ def chat():
 
         bot.send_message(chat_id, "Автор установлен")
 
-
     @bot.callback_query_handler(func=lambda name: True)
     def inline(name):
         chat_id = name.message.chat.id
@@ -66,7 +65,7 @@ def chat():
     def choose_book_handler(message):
         chat_id = message.chat.id
 
-        name_book = message.text.replace("/choose_book ", "")
+        name_book = message.text.replace("/choose_book", "")
 
         if name_book == "":
             bot.send_message(chat_id, "Нужен 1 параметр")
@@ -100,7 +99,7 @@ def chat():
     def k_random_books(message):
         chat_id = message.chat.id
 
-        if message.text.replace("/k_random_books ", "") != "":
+        if message.text.replace("/k_random_books", "") != "":
             bot.send_message(chat_id, "Команда не принимает аргументов")
             return
 
@@ -174,8 +173,25 @@ def chat():
         bot.send_message(chat_id, "Страница выбрана")
 
     @bot.message_handler(commands=['get_random_page'])
-    def get_random_page_handler:
-        return
+    def get_random_page_handler(message):
+        random.seed()
+
+        chat_id = message.chat.id
+
+        if message.text.replace("/get_random_page", "") != "":
+            bot.send_message(chat_id, "Команда не принимает аргументов")
+            return
+
+        if clients[chat_id].book_ == -1:
+            message_for_client = "Сначала выберете книгу!"
+            bot.send_message(chat_id, message_for_client)
+            return
+
+        max_page = clients[chat_id].max_page_
+        number_page = random.randint(0, max_page - 1)
+        clients[chat_id].page_ = number_page
+
+        bot.send_message(chat_id, "Выбрана {} страница".format(number_page))
 
     @bot.message_handler(commands=['choose_line'])
     def choose_line_handler(message):
