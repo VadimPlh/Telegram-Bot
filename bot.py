@@ -24,7 +24,7 @@ def chat():
         clients[message.chat.id] = client
 
         message_for_client = "Здравствуйте, я бот, который гадает по книгам.\n" \
-                             "Для начала вам стоит вызвать команду \help и " \
+                             "Для начала вам стоит вызвать команду /help и " \
                              "посмотреть все мои инструкции!\nХороших предсказаний!\n"
         chat_id = message.chat.id
         bot.send_message(chat_id, message_for_client)
@@ -360,6 +360,7 @@ def chat():
 
         number_line = clients[chat_id].line_
         line = clients[chat_id].lines_[number_line]
+        print(line)
         bot.send_message(chat_id, line)
 
 
