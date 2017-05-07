@@ -98,9 +98,13 @@ def get_lines(url, num_page):
     text = text.replace(
         "</td></tr></table></div></div></div></div></div></div></div></div></div></div></div></body></html>", "")
     text = text.replace("<p>", "<br/>")
-    text = text.replace("</p>", "<br/>")
+    text = text.replace("</p>", "")
     lines = text.split("<br/>")
-    return lines
+    ans = []
+    for line in lines:
+        if line != "":
+            ans.append(line)
+    return ans
 
 
 def find_all_writers():
