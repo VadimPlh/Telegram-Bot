@@ -24,7 +24,7 @@ def chat():
         clients[message.chat.id] = client
 
         message_for_client = "Здравствуйте, я бот, который гадает по книгам.\n" \
-                             "Для начала вам стоит вызвать команду /help и " \
+                             "Для начала, вам стоит вызвать команду /help и " \
                              "посмотреть все мои инструкции!\nХороших предсказаний!\n"
         chat_id = message.chat.id
         bot.send_message(chat_id, message_for_client)
@@ -49,6 +49,8 @@ def chat():
     @bot.message_handler(commands=['choose_writer'])
     def choose_writer_handler(message):
         chat_id = message.chat.id
+
+        name_writer = message.text.replace("/choose_writer@PredictionBooksBot", "")
 
         name_writer = message.text.replace("/choose_writer", "")
 
@@ -81,7 +83,9 @@ def chat():
     def choose_book_handler(message):
         chat_id = message.chat.id
 
-        name_book = message.text.replace("/choose_book", "")
+        name_book = message.text.replace("/choose_book@PredictionBooksBot", "")
+
+        name_writer = message.text.replace("choose_book", "")
 
         name_book = name_book.lstrip()
 
@@ -117,7 +121,13 @@ def chat():
     def get_k_random_books(message):
         chat_id = message.chat.id
 
-        if message.text.replace("/get_k_random_books", "") != "":
+        tmp = message.text
+
+        tmp = tmp.replace("/get_k_random_book@PredictionBooksBot", "")
+
+        tmp = tmp.replace("/get_k_random_books", "")
+
+        if tmp != "":
             bot.send_message(chat_id, "Команда не принимает аргументов")
             return
 
@@ -128,22 +138,27 @@ def chat():
 
         list_writers_raw = list(all_writers.keys())
         list_writers = []
-        name_writer = clients[chat_id].writer_
+        name_writer = clients[chat_id].writer_.lower()
 
         for name in list_writers_raw:
             list_writers.append(name.lower())
 
+        arr_name = name_writer.split(" ")
+
         if name_writer.lower() not in list_writers:
+            flag1 = False
             message_for_client = "Смените имя автра на возможного автора из списка\n"
             for name in list_writers:
                 print(name)
-                tmp_name_writers = name_writer.split(" ")
                 flag = True
-                for word in tmp_name_writers:
+                for word in arr_name:
                     if name.find(word) == -1:
                         flag = False
                 if flag:
                     message_for_client += "{}\n".format(name)
+                    flag1 = True
+            if not flag1:
+                message_for_client = "У меня нет такого автора"
             bot.send_message(chat_id, message_for_client)
             return
 
@@ -219,7 +234,13 @@ def chat():
     def choose_page_handler(message):
         chat_id = message.chat.id
 
-        if message.text.replace("/choose_page", "") != "":
+        tmp = message.text
+
+        tmp = tmp.replace("/choose_page@PredictionBooksBot", "")
+
+        tmp = tmp.replace("/choose_page", "")
+
+        if tmp != "":
             bot.send_message(chat_id, "Команда не принимает аргументов")
             return
 
@@ -259,7 +280,13 @@ def chat():
 
         chat_id = message.chat.id
 
-        if message.text.replace("/get_random_page", "") != "":
+        tmp = message.text
+
+        tmp = tmp.replace("/get_random_page@PredictionBooksBot", "")
+
+        tmp = tmp.replace("/get_random_page", "")
+
+        if tmp != "":
             bot.send_message(chat_id, "Команда не принимает аргументов")
             return
 
@@ -278,7 +305,13 @@ def chat():
     def choose_line_handler(message):
         chat_id = message.chat.id
 
-        if message.text.replace("/choose_line", "") != "":
+        tmp = message.text
+
+        tmp = tmp.replace("/choose_line@PredictionBooksBot", "")
+
+        tmp = tmp.replace("/choose_line", "")
+
+        if tmp != "":
             bot.send_message(chat_id, "Команда не принимает аргументов")
             return
 
@@ -324,7 +357,13 @@ def chat():
 
         chat_id = message.chat.id
 
-        if message.text.replace("/get_random_line", "") != "":
+        tmp = message.text
+
+        tmp = tmp.replace("/get_random_line@PredictionBooksBot", "")
+
+        tmp = tmp.replace("get_random_line", "")
+
+        if tmp != "":
             bot.send_message(chat_id, "Команда не принимает аргументов")
             return
 
@@ -349,7 +388,13 @@ def chat():
     def show_handler(message):
         chat_id = message.chat.id
 
-        if message.text.replace("/show", "") != "":
+        tmp = message.text
+
+        tmp = tmp.replace("/show@PredictionBooksBot", "")
+
+        tmp = tmp.replace("/show", "")
+
+        if tmp != "":
             bot.send_message(chat_id, "Команда не принимает аргументов")
             return
 
