@@ -9,6 +9,6 @@ class Client:
         self.max_book_ = -1
         self.max_page_ = -1
         self.page_ = -1
-        self.maxLine_ = -1
+        self.max_line_ = -1
         self.line_ = -1
         self.all_writers_ = {}

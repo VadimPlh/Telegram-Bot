@@ -52,9 +52,11 @@ def chat():
 
         name_writer = message.text.replace("/choose_writer@PredictionBooksBot", "")
 
-        name_writer = message.text.replace("/choose_writer", "")
+        name_writer = name_writer.replace("/choose_writer", "")
 
         name_writer = name_writer.lstrip()
+
+        name_writer.lstrip()
 
         if name_writer == "":
             bot.send_message(chat_id, "Нужен 1 параметр")
@@ -85,7 +87,7 @@ def chat():
 
         name_book = message.text.replace("/choose_book@PredictionBooksBot", "")
 
-        name_writer = message.text.replace("choose_book", "")
+        name_book = name_book.replace("choose_book", "")
 
         name_book = name_book.lstrip()
 
@@ -123,7 +125,7 @@ def chat():
 
         tmp = message.text
 
-        tmp = tmp.replace("/get_k_random_book@PredictionBooksBot", "")
+        tmp = tmp.replace("/get_k_random_books@PredictionBooksBot", "")
 
         tmp = tmp.replace("/get_k_random_books", "")
 
@@ -326,6 +328,7 @@ def chat():
         clients[chat_id].lines_ = myparser.get_lines(url, page)
 
         max_line = len(clients[chat_id].lines_)
+        clients[chat_id].max_line = max_line
 
         message_for_client = "Введите строку от 1 до {}".format(max_line)
         bot_msg = bot.send_message(chat_id, message_for_client)
@@ -343,8 +346,8 @@ def chat():
 
         number = int(number) - 1
 
-        if number < 0 or number >= clients[chat_id].max_page_:
-            message_for_client = "Номер страницы вне диапозона"
+        if number < 0 or number >= clients[chat_id].max_line_:
+            message_for_client = "Номер строки вне диапозона"
             bot.send_message(chat_id, message_for_client)
             return
 
@@ -361,7 +364,7 @@ def chat():
 
         tmp = tmp.replace("/get_random_line@PredictionBooksBot", "")
 
-        tmp = tmp.replace("get_random_line", "")
+        tmp = tmp.replace("/get_random_line", "")
 
         if tmp != "":
             bot.send_message(chat_id, "Команда не принимает аргументов")
