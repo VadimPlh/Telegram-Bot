@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 import re
 import requests
 
-
 def check_typos(request):
     """
     Эта функция позволит проверить не опечатался ли пользователь.
@@ -23,7 +22,6 @@ def check_typos(request):
     # С помощью регулярных выражений сотавляем только запрос.
     new_name = re.sub(u'[^А-Яа-я\s]*', u'', str(raw[0])).lstrip()
     return new_name.title()
-
 
 def get_books(name_of_writer, name_of_book):
     """
@@ -66,7 +64,6 @@ def get_books(name_of_writer, name_of_book):
 
     return (books)
 
-
 def max_page(url):
     """
     Находит максимальную страницу.
@@ -78,7 +75,6 @@ def max_page(url):
     pages = soup.find_all("div", class_="goto_next_page")
     number_pages = str(pages).split('">')
     return int(re.sub(u'[^1-9\s]*', u'', number_pages[-2].lstrip()))
-
 
 def get_lines(url, num_page):
     """
@@ -106,8 +102,11 @@ def get_lines(url, num_page):
             ans.append(line)
     return ans
 
-
 def find_all_writers():
+    """
+    Функция находит всех авторов в электоронной библиотеке.
+    :return: словарь автор и его url.
+    """
     url_writers = {}
     for i in range(48):
         url = "http://knijky.ru/authors?author_zhanr=All&page={}".format(i)
@@ -122,8 +121,13 @@ def find_all_writers():
             url_writers[name] = "http://knijky.ru" + tmp2[0]
     return url_writers
 
-
 def find_all_books(writer, url_writers):
+    """
+    Функция находит все книги заданного автора.
+    :param writer: string
+    :param url_writers: string
+    :return: словарь название книги и ее url.
+    """
     url_books = {}
     writer = writer.lower()
     url = url_writers[writer]
