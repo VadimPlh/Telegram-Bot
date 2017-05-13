@@ -273,11 +273,11 @@ def chat():
     def choose_page_handler(message):
         chat_id = message.chat.id
 
-        tmp = message.text
+        command = message.text
 
-        tmp = tmp.replace("/choose_page@PredictionBooksBot", "")
+        command = command.replace("/choose_page@PredictionBooksBot", "")
 
-        tmp = tmp.replace("/choose_page", "")
+        command = command.replace("/choose_page", "")
 
         number_book = -1
         try:
@@ -286,7 +286,7 @@ def chat():
             bot.send_message(chat_id, "Сначала вызовете /start")
             return
 
-        if tmp != "":
+        if command != "":
             bot.send_message(chat_id, "Команда не принимает аргументов")
             return
 
