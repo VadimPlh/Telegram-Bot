@@ -60,7 +60,7 @@ def chat():
 
         try:
             clients[chat_id].writer_ = name_writer
-        except:
+        except Exception:
             bot.send_message(chat_id, "Сначала вызовете /start")
             return
 
@@ -79,7 +79,7 @@ def chat():
                 return
 
             bot.send_message(chat_id, "Автор установлен")
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -103,7 +103,7 @@ def chat():
 
         try:
             name_writer = clients[chat_id].writer_
-        except:
+        except Exception:
             bot.send_message(chat_id, "Сначала вызовете /start")
             return
 
@@ -135,7 +135,7 @@ def chat():
 
             bot_msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_book_number)
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -152,7 +152,7 @@ def chat():
         writer = ""
         try:
             writer = clients[chat_id].writer_
-        except:
+        except Exception:
             bot.send_message(chat_id, "Сначала вызовете /start")
             return
 
@@ -200,7 +200,7 @@ def chat():
             message_for_client = "Выберете кол-во книг от 1 до {}".format(max_books)
             bot.msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot.msg, get_books)
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -235,7 +235,7 @@ def chat():
 
             bot_msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_book_number)
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -265,7 +265,7 @@ def chat():
 
             print(all_writers.keys())
             bot.send_message(chat_id, "Книга установлена")
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -282,7 +282,7 @@ def chat():
         number_book = -1
         try:
             number_book = clients[chat_id].book_
-        except:
+        except Exception:
             bot.send_message(chat_id, "Сначала вызовете /start")
             return
 
@@ -300,7 +300,7 @@ def chat():
             message_for_client = "Выберите страницу от 1 до {}".format(max_page)
             bot_msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_page_number)
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -324,7 +324,7 @@ def chat():
             clients[chat_id].page_ = number
 
             bot.send_message(chat_id, "Страница выбрана")
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -343,7 +343,7 @@ def chat():
         number_book = -1
         try:
             number_book = clients[chat_id].book_
-        except:
+        except Exception:
             bot.send_message(chat_id, "Сначала вызовете /start")
             return
 
@@ -362,7 +362,7 @@ def chat():
             clients[chat_id].page_ = number_page
 
             bot.send_message(chat_id, "Выбрана {} страница".format(number_page))
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -379,7 +379,7 @@ def chat():
         number_page = -1
         try:
             number_page = clients[chat_id].page_
-        except:
+        except Exception:
             bot.send_message(chat_id, "Сначала вызовете /start")
             return
 
@@ -404,7 +404,7 @@ def chat():
             message_for_client = "Введите строку от 1 до {}".format(max_line)
             bot_msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_line_number)
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -428,7 +428,7 @@ def chat():
 
             clients[chat_id].line_ = number
             bot.send_message(chat_id, "Строка установлена")
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -447,7 +447,7 @@ def chat():
         number_page = -1
         try:
             number_page = clients[chat_id].page_
-        except:
+        except Exception:
             bot.send_message(chat_id, "Сначала вызовете /start")
             return
 
@@ -471,7 +471,7 @@ def chat():
 
             clients[chat_id].line_ = number_line
             bot.send_message(chat_id, "Выбрана {} строка".format(number_line + 1))
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
@@ -488,7 +488,7 @@ def chat():
         number_line = -1
         try:
             number_line = clients[chat_id].line_
-        except:
+        except Exception:
             bot.send_message(chat_id, "Сначала вызовете /start")
             return
 
@@ -506,7 +506,7 @@ def chat():
             line = clients[chat_id].lines_[number_line]
             print(line)
             bot.send_message(chat_id, line)
-        except:
+        except Exception:
             bot.send_message(chat_id, "Неизвестная ошибка")
             return
 
