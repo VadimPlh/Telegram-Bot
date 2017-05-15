@@ -13,7 +13,6 @@ def check_typos(request):
     url = 'http://www.google.com/search?q='
     page = requests.get(url + request.lower())
 
-    # Сделаем из сnраницы суп и распарсим ее.
     soup = BeautifulSoup(page.text, "html.parser")
     raw = soup.find_all("a", class_="spell")
 
@@ -37,7 +36,6 @@ def get_books(name_of_writer, name_of_book):
     url = 'http://knijky.ru/search?search_api_views_fulltext='
     page = requests.get(url + name_of_book.lower())
 
-    # Сделаем из страницы суп и распарсим ее.
     soup = BeautifulSoup(page.text, "html.parser")
     raw_books = soup.find_all("div", class_="views-field views-field-title")
     raw_writers = soup.find_all("div",
