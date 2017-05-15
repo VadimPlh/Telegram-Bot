@@ -57,7 +57,7 @@ def chat():
 
         try:
             clients[chat_id].writer_ = name_writer
-        except Exception:
+        except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
@@ -98,7 +98,7 @@ def chat():
 
         try:
             name_writer = clients[chat_id].writer_
-        except Exception:
+        except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
@@ -143,7 +143,7 @@ def chat():
         writer = ""
         try:
             writer = clients[chat_id].writer_
-        except Exception:
+        except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
@@ -268,7 +268,7 @@ def chat():
         number_book = myconst.no_value
         try:
             number_book = clients[chat_id].book_
-        except Exception:
+        except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
@@ -327,7 +327,7 @@ def chat():
         number_book = myconst.no_value
         try:
             number_book = clients[chat_id].book_
-        except Exception:
+        except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
@@ -361,7 +361,7 @@ def chat():
         number_page = myconst.no_value
         try:
             number_page = clients[chat_id].page_
-        except Exception:
+        except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
@@ -426,7 +426,7 @@ def chat():
         number_page = myconst.no_value
         try:
             number_page = clients[chat_id].page_
-        except Exception:
+        except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
@@ -465,7 +465,7 @@ def chat():
         number_line = myconst.no_value
         try:
             number_line = clients[chat_id].line_
-        except Exception:
+        except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
