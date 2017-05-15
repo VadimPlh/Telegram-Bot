@@ -1,4 +1,5 @@
 import classclient
+import logging
 import myconst
 import myparser
 import numpy
@@ -7,6 +8,24 @@ import telebot
 
 TOKEN = '304243519:AAGRSN21G8Ft0eO5QBKlf79-q-dpSnzjrJA'
 bot = telebot.TeleBot(TOKEN)
+
+logger = logging.getLogger(__name__)
+handler = logging.FileHandler("my_logger.log")
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+
+def logg_info_record(chat_id, text):
+    logger.setLevel(logging.INFO)
+    handler.setLevel(logging.INFO)
+    logger.info("{} {}".format(chat_id, text))
+
+
+def logg_error_record(chat_id, text):
+    logger.setLevel(logging.ERROR)
+    handler.setLevel(logging.ERROR)
+    logger.error("{} {}".format(chat_id, text))
 
 def chat():
     clients = {}
@@ -18,11 +37,12 @@ def chat():
 
     @bot.message_handler(commands=['start'])
     def start_handler(message):
-
-        # Занесем клиентов в базу.
+         # Занесем клиентов в базу.
         chat_id = message.chat.id
         client = classclient.Client(chat_id)
         clients[message.chat.id] = client
+
+        logg_info_record(chat_id, "start use bot")
 
         message_for_client = "Здравствуйте, я бот, который гадает по книгам.\n" \
                              "Для начала, вам стоит вызвать команду /help и " \
@@ -33,6 +53,8 @@ def chat():
     @bot.message_handler(commands=['help'])
     def help_handler(message):
         chat_id = message.chat.id
+
+        logg_info_record(chat_id, "use /help")
 
         message_for_client = 'Список команд для бота:\n' \
         '/start - начать предсказание\n' \
@@ -59,10 +81,12 @@ def chat():
             clients[chat_id].writer_ = name_writer
         except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
+            logg_error_record(chat_id, myconst.not_srtart)
             return
 
         if not name_writer:
             bot.send_message(chat_id, myconst.need_param)
+            logg_error_record(chat_id, myconst.need_param)
             return
 
         try:
@@ -76,8 +100,10 @@ def chat():
                 return
 
             bot.send_message(chat_id, "Автор установлен")
+            logg_info_record(chat_id, "установил писателя")
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     @bot.callback_query_handler(func=lambda name: True)
@@ -85,6 +111,7 @@ def chat():
         chat_id = name.message.chat.id
         clients[chat_id].writer_ = name.data
         bot.send_message(chat_id, "Автор установлен")
+        logg_info_record(chat_id, "установил писателя")
 
     @bot.message_handler(commands=['choose_book'])
     def choose_book_handler(message):
@@ -100,20 +127,26 @@ def chat():
             name_writer = clients[chat_id].writer_
         except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
+            logg_error_record(chat_id, myconst.not_srtart)
             return
 
         if not name_book:
             bot.send_message(chat_id, myconst.need_param)
+            logg_error_record(chat_id, myconst.need_param)
             return
 
         if not clients[chat_id].writer_:
             bot.send_message(chat_id, myconst.not_writer)
+            logg_error_record(chat_id, myconst.not_writer)
             return
 
         try:
             name_writer = clients[chat_id].writer_
             books = myparser.get_books(name_writer, name_book)
             clients[chat_id].books_ = books
+
+            logg_info_record(chat_id, "начал выбирать книгу")
+
             print(books)
 
             if books == {}:
@@ -130,6 +163,7 @@ def chat():
             bot.register_next_step_handler(bot_msg, choose_book_number)
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['get_k_random_books'])
@@ -145,14 +179,17 @@ def chat():
             writer = clients[chat_id].writer_
         except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
+            logg_error_record(chat_id, myconst.not_srtart)
             return
 
         if command:
             bot.send_message(chat_id, myconst.not_need_param)
+            logg_error_record(chat_id, myconst.not_need_param)
             return
 
         if not writer:
             bot.send_message(chat_id, myconst.not_writer)
+            logg_error_record(chat_id, myconst.not_writer)
             return
 
         try:
@@ -164,6 +201,8 @@ def chat():
                 list_writers.append(name.lower())
 
             arr_name = name_writer.split(" ")
+
+            logg_info_record(chat_id, "Вызвал полуение нескольких писателей")
 
             if name_writer.lower() not in list_writers:
                 writer_not_zero = False
@@ -192,6 +231,7 @@ def chat():
             bot.register_next_step_handler(bot.msg, get_books)
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     def get_books(message):
@@ -207,7 +247,10 @@ def chat():
             if count < 1 or count > clients[chat_id].max_book_:
                 message_for_client = "Номер книги вне диапозона"
                 bot.send_message(chat_id, message_for_client)
+                logg_error_record(chat_id, "номер книги вне диапозона")
                 return
+
+            logg_info_record(chat_id, "Выбрал кол-во книг")
 
             name_books = list(clients[message.chat.id].books_.keys())
             new_name_books = numpy.random.choice(name_books, count, replace=False)
@@ -226,6 +269,7 @@ def chat():
             bot.register_next_step_handler(bot_msg, choose_book_number)
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     def choose_book_number(message):
@@ -251,10 +295,12 @@ def chat():
             max_page = myparser.max_page(list_of_book[number])
             clients[chat_id].max_page_ = max_page
 
-            print(all_writers.keys())
+            logg_info_record(chat_id, "выбрал книгу")
+
             bot.send_message(chat_id, "Книга установлена")
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['choose_page'])
@@ -270,24 +316,31 @@ def chat():
             number_book = clients[chat_id].book_
         except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
+            logg_error_record(chat_id, myconst.not_srtart)
             return
 
         if command:
             bot.send_message(chat_id, myconst.not_need_param)
+            logg_error_record(chat_id, myconst.not_need_param)
             return
 
         if number_book == myconst.no_value:
             message_for_client = "Сначала выберете книгу!"
             bot.send_message(chat_id, message_for_client)
+            logg_error_record(chat_id, "не выбрана книга")
             return
 
         try:
             max_page = clients[chat_id].max_page_
+
+            logg_info_record(chat_id, "перещел к выбору строки")
+
             message_for_client = "Выберите страницу от 1 до {}".format(max_page)
             bot_msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_page_number)
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     def choose_page_number(message):
@@ -299,19 +352,24 @@ def chat():
             if message.content_type != "text" or not number.isdigit():
                 message_for_client = myconst.no_understand
                 bot.send_message(chat_id, message_for_client)
+                logg_error_record(chat_id, message_for_client)
                 return
 
             number = int(number) - 1
 
             if number < 0 or number >= clients[chat_id].max_page_:
                 bot.send_message(chat_id, "Страница вне дипозона!")
+                logg_error_record(chat_id, "Вне диапозона номер")
                 return
 
             clients[chat_id].page_ = number
 
+            logg_info_record(chat_id, "выбрал страницу")
+
             bot.send_message(chat_id, "Страница выбрана")
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['get_random_page'])
@@ -329,15 +387,18 @@ def chat():
             number_book = clients[chat_id].book_
         except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
+            logg_error_record(chat_id, myconst.not_srtart)
             return
 
         if command:
             bot.send_message(chat_id, myconst.not_need_param)
+            logg_error_record(chat_id, myconst.not_need_param)
             return
 
         if number_book == myconst.no_value:
             message_for_client = "Сначала выберете книгу!"
             bot.send_message(chat_id, message_for_client)
+            logg_error_record(chat_id, message_for_client)
             return
 
         try:
@@ -345,9 +406,12 @@ def chat():
             number_page = random.randint(0, max_page - 1)
             clients[chat_id].page_ = number_page
 
+            logg_error_record(chat_id, "рандомно выбрал страницу")
+
             bot.send_message(chat_id, "Выбрана {} страница".format(number_page))
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['choose_line'])
@@ -363,15 +427,18 @@ def chat():
             number_page = clients[chat_id].page_
         except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
+            logg_error_record(chat_id, myconst.not_srtart)
             return
 
         if command:
             bot.send_message(chat_id, myconst.not_need_param)
+            logg_error_record(chat_id, myconst.not_need_param)
             return
 
         if number_page == myconst.no_value:
             message_for_client = "Сначала выберете страницу!"
             bot.send_message(chat_id, message_for_client)
+            logg_error_record(chat_id, message_for_client)
             return
 
         try:
@@ -383,11 +450,14 @@ def chat():
             max_line = len(clients[chat_id].lines_)
             clients[chat_id].max_line_ = max_line
 
+            logg_info_record(chat_id, "Выбирает строку")
+
             message_for_client = "Введите строку от 1 до {}".format(max_line)
             bot_msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_line_number)
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     def choose_line_number(message):
@@ -398,6 +468,7 @@ def chat():
 
             if message.content_type != "text" or not number.isdigit():
                 bot.send_message(chat_id, myconst.no_understand)
+                logg_error_record(chat_id, myconst.no_understand)
                 return
 
             number = int(number) - 1
@@ -405,12 +476,17 @@ def chat():
             if number < 0 or number >= clients[chat_id].max_line_:
                 message_for_client = "Номер строки вне диапозона"
                 bot.send_message(chat_id, message_for_client)
+                logg_error_record(chat_id, message_for_client)
                 return
 
             clients[chat_id].line_ = number
+
+            logg_info_record(chat_id, "усановил строку")
+
             bot.send_message(chat_id, "Строка установлена")
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['get_random_line'])
@@ -428,15 +504,18 @@ def chat():
             number_page = clients[chat_id].page_
         except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
+            logg_error_record(chat_id, myconst.not_srtart)
             return
 
         if command:
             bot.send_message(chat_id, myconst.not_need_param)
+            logg_error_record(chat_id, myconst.not_need_param)
             return
 
         if number_page == myconst.no_value:
             message_for_client = "Сначала выберете страницу!"
             bot.send_message(chat_id, message_for_client)
+            logg_error_record(chat_id, message_for_client)
             return
 
         try:
@@ -448,10 +527,13 @@ def chat():
             max_line = len(clients[chat_id].lines_)
             number_line = random.randint(0, max_line - 1)
 
+            logg_info_record(chat_id, "получил строку")
+
             clients[chat_id].line_ = number_line
             bot.send_message(chat_id, "Выбрана {} строка".format(number_line + 1))
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['show'])
@@ -467,24 +549,32 @@ def chat():
             number_line = clients[chat_id].line_
         except KeyError:
             bot.send_message(chat_id, myconst.not_srtart)
+            logg_error_record(chat_id, myconst.not_srtart)
             return
 
         if command:
             bot.send_message(chat_id, myconst.not_need_param)
+            logg_error_record(chat_id, myconst.not_need_param)
             return
 
         if clients[chat_id].line_ == myconst.no_value:
             message_for_client = "Сначала выберете строку!"
             bot.send_message(chat_id, message_for_client)
+            logg_error_record(chat_id, message_for_client)
             return
 
         try:
             number_line = clients[chat_id].line_
             line = clients[chat_id].lines_[number_line]
+
             print(line)
+
+            logg_info_record(chat_id, "Вывелась строка {}".format(line))
+
             bot.send_message(chat_id, line)
         except Exception:
             bot.send_message(chat_id, myconst.unknow_error)
+            logg_error_record(chat_id, myconst.unknow_error)
             return
 
 
