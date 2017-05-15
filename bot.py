@@ -202,7 +202,7 @@ def chat():
 
             arr_name = name_writer.split()
 
-            logg_info_record(chat_id, "Вызвал полуение нескольких писателей")
+            logg_info_record(chat_id, "Вызвал полуение нескольких книг")
 
             if name_writer.lower() not in list_writers:
                 writer_not_zero = False
