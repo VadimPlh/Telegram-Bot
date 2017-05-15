@@ -61,7 +61,7 @@ def chat():
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
-        if name_writer == "":
+        if not name_writer:
             bot.send_message(chat_id, myconst.need_param)
             return
 
@@ -102,11 +102,11 @@ def chat():
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
-        if name_book == "":
+        if not name_book:
             bot.send_message(chat_id, myconst.need_param)
             return
 
-        if clients[chat_id].writer_ == "":
+        if not clients[chat_id].writer_:
             bot.send_message(chat_id, myconst.not_writer)
             return
 
@@ -147,11 +147,11 @@ def chat():
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
-        if command != "":
+        if command:
             bot.send_message(chat_id, myconst.not_need_param)
             return
 
-        if writer == "":
+        if not writer:
             bot.send_message(chat_id, myconst.not_writer)
             return
 
@@ -272,7 +272,7 @@ def chat():
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
-        if command != "":
+        if command:
             bot.send_message(chat_id, myconst.not_need_param)
             return
 
@@ -331,7 +331,7 @@ def chat():
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
-        if command != "":
+        if command:
             bot.send_message(chat_id, myconst.not_need_param)
             return
 
@@ -365,7 +365,7 @@ def chat():
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
-        if command != "":
+        if command:
             bot.send_message(chat_id, myconst.not_need_param)
             return
 
@@ -430,7 +430,7 @@ def chat():
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
-        if command != "":
+        if command:
             bot.send_message(chat_id, myconst.not_need_param)
             return
 
@@ -469,7 +469,7 @@ def chat():
             bot.send_message(chat_id, myconst.not_srtart)
             return
 
-        if command != "":
+        if command:
             bot.send_message(chat_id, myconst.not_need_param)
             return
 

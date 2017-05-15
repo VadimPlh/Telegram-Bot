@@ -98,7 +98,7 @@ def get_lines(url, num_page):
     lines = text.split("<br/>")
     ans = []
     for line in lines:
-        if line != "":
+        if line:
             ans.append(line)
     return ans
 
