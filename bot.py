@@ -1,4 +1,5 @@
 import classclient
+import myconst
 import myparser
 import numpy
 import random
@@ -51,21 +52,17 @@ def chat():
         chat_id = message.chat.id
 
         name_writer = message.text.replace("/choose_writer@PredictionBooksBot", "")
-
         name_writer = name_writer.replace("/choose_writer", "")
-
         name_writer = name_writer.lstrip()
-
-        name_writer.lstrip()
 
         try:
             clients[chat_id].writer_ = name_writer
         except Exception:
-            bot.send_message(chat_id, "Сначала вызовете /start")
+            bot.send_message(chat_id, myconst.not_srtart)
             return
 
         if name_writer == "":
-            bot.send_message(chat_id, "Нужен 1 параметр")
+            bot.send_message(chat_id, myconst.need_param)
             return
 
         try:
@@ -80,7 +77,7 @@ def chat():
 
             bot.send_message(chat_id, "Автор установлен")
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     @bot.callback_query_handler(func=lambda name: True)
@@ -94,9 +91,7 @@ def chat():
         chat_id = message.chat.id
 
         name_book = message.text.replace("/choose_book@PredictionBooksBot", "")
-
-        name_book = name_book.replace("choose_book", "")
-
+        name_book = name_book.replace("/choose_book", "")
         name_book = name_book.lstrip()
 
         name_writer = ""
@@ -104,16 +99,15 @@ def chat():
         try:
             name_writer = clients[chat_id].writer_
         except Exception:
-            bot.send_message(chat_id, "Сначала вызовете /start")
+            bot.send_message(chat_id, myconst.not_srtart)
             return
 
         if name_book == "":
-            bot.send_message(chat_id, "Нужен 1 параметр")
+            bot.send_message(chat_id, myconst.need_param)
             return
 
         if clients[chat_id].writer_ == "":
-            message_for_client = "Сначала выберете автора!"
-            bot.send_message(chat_id, message_for_client)
+            bot.send_message(chat_id, myconst.not_writer)
             return
 
         try:
@@ -123,20 +117,19 @@ def chat():
             print(books)
 
             if books == {}:
-                message_for_client = "Такой книги нет("
-                bot.send_message(chat_id, message_for_client)
+                bot.send_message(chat_id, myconst.not_client_book)
                 return
 
             message_for_client = "Какую книгу вы хотите выбрать?\n(Отправьте ее номер)\n"
             for i, book in enumerate(books.keys()):
-                message_for_client += str(i + 1) + ") " + book + "\n"
+                message_for_client += "{}) {}\n".format(i + 1, book)
 
             clients[chat_id].max_book_ = len(books)
 
             bot_msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_book_number)
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['get_k_random_books'])
@@ -144,25 +137,22 @@ def chat():
         chat_id = message.chat.id
 
         command = message.text
-
         command = command.replace("/get_k_random_books@PredictionBooksBot", "")
-
         command = command.replace("/get_k_random_books", "")
 
         writer = ""
         try:
             writer = clients[chat_id].writer_
         except Exception:
-            bot.send_message(chat_id, "Сначала вызовете /start")
+            bot.send_message(chat_id, myconst.not_srtart)
             return
 
         if command != "":
-            bot.send_message(chat_id, "Команда не принимает аргументов")
+            bot.send_message(chat_id, myconst.not_need_param)
             return
 
         if writer == "":
-            message_for_client = "Сначала выберете автора!"
-            bot.send_message(chat_id, message_for_client)
+            bot.send_message(chat_id, myconst.not_writer)
             return
 
         try:
@@ -182,7 +172,7 @@ def chat():
                     print(name)
                     flag = True
                     for word in arr_name:
-                        if name.find(word) == -1:
+                        if name.find(word) == myconst.no_value:
                             flag = False
                     if flag:
                         message_for_client += "{}\n".format(name)
@@ -201,7 +191,7 @@ def chat():
             bot.msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot.msg, get_books)
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     def get_books(message):
@@ -210,8 +200,7 @@ def chat():
             count = message.text
 
             if message.content_type != "text" or not count.isdigit():
-                message_for_client = "Извините, я вас не могу понять=("
-                bot.send_message(chat_id, message_for_client)
+                bot.send_message(chat_id, myconst.no_understand)
                 return
 
             count = int(count)
@@ -236,7 +225,7 @@ def chat():
             bot_msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_book_number)
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     def choose_book_number(message):
@@ -245,8 +234,7 @@ def chat():
             number = message.text
 
             if message.content_type != "text" or not number.isdigit():
-                message_for_client = "Извините, я вас не могу понять=("
-                bot.send_message(chat_id, message_for_client)
+                bot.send_message(chat_id, myconst.no_understand)
                 return
 
             number = int(number) - 1
@@ -266,7 +254,7 @@ def chat():
             print(all_writers.keys())
             bot.send_message(chat_id, "Книга установлена")
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['choose_page'])
@@ -274,23 +262,21 @@ def chat():
         chat_id = message.chat.id
 
         command = message.text
-
         command = command.replace("/choose_page@PredictionBooksBot", "")
-
         command = command.replace("/choose_page", "")
 
-        number_book = -1
+        number_book = myconst.no_value
         try:
             number_book = clients[chat_id].book_
         except Exception:
-            bot.send_message(chat_id, "Сначала вызовете /start")
+            bot.send_message(chat_id, myconst.not_srtart)
             return
 
         if command != "":
-            bot.send_message(chat_id, "Команда не принимает аргументов")
+            bot.send_message(chat_id, myconst.not_need_param)
             return
 
-        if number_book == -1:
+        if number_book == myconst.no_value:
             message_for_client = "Сначала выберете книгу!"
             bot.send_message(chat_id, message_for_client)
             return
@@ -301,7 +287,7 @@ def chat():
             bot_msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_page_number)
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     def choose_page_number(message):
@@ -311,7 +297,7 @@ def chat():
             number = message.text
 
             if message.content_type != "text" or not number.isdigit():
-                message_for_client = "Извините, я вас не могу понять=("
+                message_for_client = myconst.no_understand
                 bot.send_message(chat_id, message_for_client)
                 return
 
@@ -325,7 +311,7 @@ def chat():
 
             bot.send_message(chat_id, "Страница выбрана")
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['get_random_page'])
@@ -335,23 +321,21 @@ def chat():
         chat_id = message.chat.id
 
         command = message.text
-
         command = command.replace("/get_random_page@PredictionBooksBot", "")
-
         command = command.replace("/get_random_page", "")
 
-        number_book = -1
+        number_book = myconst.no_value
         try:
             number_book = clients[chat_id].book_
         except Exception:
-            bot.send_message(chat_id, "Сначала вызовете /start")
+            bot.send_message(chat_id, myconst.not_srtart)
             return
 
         if command != "":
-            bot.send_message(chat_id, "Команда не принимает аргументов")
+            bot.send_message(chat_id, myconst.not_need_param)
             return
 
-        if number_book == -1:
+        if number_book == myconst.no_value:
             message_for_client = "Сначала выберете книгу!"
             bot.send_message(chat_id, message_for_client)
             return
@@ -363,7 +347,7 @@ def chat():
 
             bot.send_message(chat_id, "Выбрана {} страница".format(number_page))
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['choose_line'])
@@ -371,23 +355,21 @@ def chat():
         chat_id = message.chat.id
 
         command = message.text
-
         command = command.replace("/choose_line@PredictionBooksBot", "")
-
         command = command.replace("/choose_line", "")
 
-        number_page = -1
+        number_page = myconst.no_value
         try:
             number_page = clients[chat_id].page_
         except Exception:
-            bot.send_message(chat_id, "Сначала вызовете /start")
+            bot.send_message(chat_id, myconst.not_srtart)
             return
 
         if command != "":
-            bot.send_message(chat_id, "Команда не принимает аргументов")
+            bot.send_message(chat_id, myconst.not_need_param)
             return
 
-        if number_page == -1:
+        if number_page == myconst.no_value:
             message_for_client = "Сначала выберете страницу!"
             bot.send_message(chat_id, message_for_client)
             return
@@ -405,7 +387,7 @@ def chat():
             bot_msg = bot.send_message(chat_id, message_for_client)
             bot.register_next_step_handler(bot_msg, choose_line_number)
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     def choose_line_number(message):
@@ -415,8 +397,7 @@ def chat():
             number = message.text
 
             if message.content_type != "text" or not number.isdigit():
-                message_for_client = "Извините, я вас не могу понять=("
-                bot.send_message(chat_id, message_for_client)
+                bot.send_message(chat_id, myconst.no_understand)
                 return
 
             number = int(number) - 1
@@ -429,7 +410,7 @@ def chat():
             clients[chat_id].line_ = number
             bot.send_message(chat_id, "Строка установлена")
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['get_random_line'])
@@ -439,23 +420,21 @@ def chat():
         chat_id = message.chat.id
 
         command = message.text
-
         command = command.replace("/get_random_line@PredictionBooksBot", "")
-
         command = command.replace("/get_random_line", "")
 
-        number_page = -1
+        number_page = myconst.no_value
         try:
             number_page = clients[chat_id].page_
         except Exception:
-            bot.send_message(chat_id, "Сначала вызовете /start")
+            bot.send_message(chat_id, myconst.not_srtart)
             return
 
         if command != "":
-            bot.send_message(chat_id, "Команда не принимает аргументов")
+            bot.send_message(chat_id, myconst.not_need_param)
             return
 
-        if number_page == -1:
+        if number_page == myconst.no_value:
             message_for_client = "Сначала выберете страницу!"
             bot.send_message(chat_id, message_for_client)
             return
@@ -472,31 +451,29 @@ def chat():
             clients[chat_id].line_ = number_line
             bot.send_message(chat_id, "Выбрана {} строка".format(number_line + 1))
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
     @bot.message_handler(commands=['show'])
     def show_handler(message):
         chat_id = message.chat.id
 
-        tmp = message.text
+        command = message.text
+        command = command.replace("/show@PredictionBooksBot", "")
+        command = command.replace("/show", "")
 
-        tmp = tmp.replace("/show@PredictionBooksBot", "")
-
-        tmp = tmp.replace("/show", "")
-
-        number_line = -1
+        number_line = myconst.no_value
         try:
             number_line = clients[chat_id].line_
         except Exception:
-            bot.send_message(chat_id, "Сначала вызовете /start")
+            bot.send_message(chat_id, myconst.not_srtart)
             return
 
-        if tmp != "":
-            bot.send_message(chat_id, "Команда не принимает аргументов")
+        if command != "":
+            bot.send_message(chat_id, myconst.not_need_param)
             return
 
-        if clients[chat_id].line_ == -1:
+        if clients[chat_id].line_ == myconst.no_value:
             message_for_client = "Сначала выберете строку!"
             bot.send_message(chat_id, message_for_client)
             return
@@ -507,7 +484,7 @@ def chat():
             print(line)
             bot.send_message(chat_id, line)
         except Exception:
-            bot.send_message(chat_id, "Неизвестная ошибка")
+            bot.send_message(chat_id, myconst.unknow_error)
             return
 
 

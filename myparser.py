@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import myconst
 import re
 import requests
 
@@ -62,7 +63,8 @@ def get_books(name_of_writer, name_of_book):
                                     tmp2_books[1].lstrip())
                 books[name_books] = "http://knijky.ru/" + tmp2_books[0]
 
-    return (books)
+    return books
+
 
 def max_page(url):
     """
@@ -108,7 +110,7 @@ def find_all_writers():
     :return: словарь автор и его url.
     """
     url_writers = {}
-    for i in range(48):
+    for i in range(myconst.max_page_writer):
         url = "http://knijky.ru/authors?author_zhanr=All&page={}".format(i)
         page = requests.get(url)
         soup = BeautifulSoup(page.text, "html.parser")
@@ -136,7 +138,7 @@ def find_all_books(writer, url_writers):
     tmp = str(soup)
 
     max_pages = 0
-    if (tmp.find('pager-last last"><a href="') != -1):
+    if (tmp.find('pager-last last"><a href="') != myconst.no_value):
         tmp1 = tmp.split('pager-last last"><a href="')
         tmp2 = tmp1[1].split('"></a></li>')
         max_pages = int(tmp2[0].split('?page=')[1])
@@ -153,3 +155,5 @@ def find_all_books(writer, url_writers):
                 url = raw_array[1].split('">')[0]
                 url_books[name] = 'http://knijky.ru/books/' + url
     return url_books
+
+get_books('Джоан Роулинг', '')
