@@ -166,18 +166,18 @@ def chat():
             arr_name = name_writer.split(" ")
 
             if name_writer.lower() not in list_writers:
-                flag1 = False
+                writer_not_zero = False
                 message_for_client = "Смените имя автра на возможного автора из списка\n"
                 for name in list_writers:
                     print(name)
-                    flag = True
+                    flag_client_name_in_name_writer = True
                     for word in arr_name:
                         if name.find(word) == myconst.no_value:
-                            flag = False
-                    if flag:
+                            flag_client_name_in_name_writer = False
+                    if flag_client_name_in_name_writer:
                         message_for_client += "{}\n".format(name)
-                        flag1 = True
-                if not flag1:
+                        writer_not_zero = True
+                if not writer_not_zero:
                     message_for_client = "У меня нет такого автора"
                 bot.send_message(chat_id, message_for_client)
                 return
