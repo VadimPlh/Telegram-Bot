@@ -200,7 +200,7 @@ def chat():
             for name in list_writers_raw:
                 list_writers.append(name.lower())
 
-            arr_name = name_writer.split(" ")
+            arr_name = name_writer.split()
 
             logg_info_record(chat_id, "Вызвал полуение нескольких писателей")
 

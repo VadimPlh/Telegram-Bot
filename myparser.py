@@ -53,7 +53,7 @@ def get_books(name_of_writer, name_of_book):
                                   tmp2_writers[1].lstrip())
 
             flag = True
-            for words in name_of_writer.split(" "):
+            for words in name_of_writer.split():
                 if name_writers.lower().find(words.lower()) == -1:
                     flag = False
             if flag:
