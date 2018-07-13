@@ -6,7 +6,6 @@ import numpy
 import random
 import telebot
 
-TOKEN = ...
 bot = telebot.TeleBot(TOKEN)
 
 logger = logging.getLogger(__name__)
